@@ -1,0 +1,15 @@
+{
+  "done": {
+    "condition": "any",
+    "variables": {
+      "rounds1": {
+        "op": "equal",
+        "reference": 2
+      },
+      "rounds2": {
+        "op": "equal",
+        "reference": 2
+      }
+    }
+  }
+}

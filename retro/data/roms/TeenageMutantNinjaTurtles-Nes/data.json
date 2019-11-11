@@ -1,0 +1,20 @@
+{
+  "info": {
+    "health2": {
+      "address": 1607,
+      "type": "|u1"
+    },
+    "health1": {
+      "address": 1608,
+      "type": "|u1"
+    },
+    "rounds1": {
+      "address": 1609,
+      "type": "|u1"
+    },
+    "rounds2": {
+      "address": 1610,
+      "type": "|u1"
+    }
+  }
+}
