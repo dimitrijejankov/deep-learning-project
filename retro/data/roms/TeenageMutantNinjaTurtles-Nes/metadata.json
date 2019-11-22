@@ -1,3 +1,7 @@
 {
-  "default_state": "DonVSLeo"
+  "default_state": "DonVSLeo",
+  "states": {
+    "DonVSLeoCPU": {},
+    "LeoVSDonCPU": {}
+  }
 }
