@@ -6,6 +6,7 @@ import numpy as np
 
 env = None
 
+
 def eval_genomes(genomes, config):
     for genome_id, genome in genomes:
 
@@ -112,7 +113,7 @@ def main():
 
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         'config-feedforward')
+                         'config-feedforward-leo')
 
     p = neat.Population(config)
 

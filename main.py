@@ -1,8 +1,8 @@
 import retro
 
-
 # health starts at 176
 # put the game rom into retro/data/roms/TeenageMutantNinjaTurtles-Nes/rom.nes
+
 
 def main():
     retro.data.path("./")
