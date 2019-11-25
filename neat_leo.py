@@ -34,7 +34,8 @@ def eval_genomes(genomes, config):
         player_1_hp = 176
         player_2_hp = 176
 
-        action = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        action = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0, 0, 0])
         while not done:
             env.render()  # Optional
 

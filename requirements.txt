@@ -1,3 +1,5 @@
 gym-retro
 torch
 neat-python
+keras
+keras-rl

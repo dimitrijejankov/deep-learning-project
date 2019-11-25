@@ -2,3 +2,5 @@ gym-retro
 venv
 .idea
 retro/data/roms/TeenageMutantNinjaTurtles-Nes/rom.nes
+keras-rl
+keras_dq/__pycache__/
