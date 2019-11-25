@@ -25,26 +25,28 @@ integration.add_custom_path("roms")
 env = retro.make(game='TeenageMutantNinjaTurtles-Nes', state="DonVSLeo", inttype=integration, players=2)
 
 # 2. Apply action space wrapper
-env = UserControllerWrapper(env)
+env = UserControllerWrapper(env, True)
 
 # 3. Apply observation space wrapper to reduce input size
-env = TrainingWrapper(env, integration)
+env = TrainingWrapper(False, env, integration)
 
 np.random.seed(123)
 env.seed(123)
 nb_actions = env.action_space.n
 
+# make the model
 model = Sequential()
-
-model.add(Conv2D(filters=32, kernel_size=8, strides=4, activation="relu", input_shape=(1, 64, 64), data_format="channels_first"))
+model.add(Conv2D(filters=32, kernel_size=8, strides=4, activation="relu", input_shape=(64, 64, 3),
+                 data_format="channels_last"))
 model.add(Conv2D(filters=64, kernel_size=4, strides=2, activation="relu"))
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
 model.add(Dense(128, activation='relu'))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(nb_actions, activation='linear'))
 
-policy = BoltzmannQPolicy()
+policy = EpsGreedyQPolicy()
 memory = SequentialMemory(limit=50000, window_length=1)
 dqn = DQNAgent(model=model,
                nb_actions=nb_actions,
@@ -57,7 +59,7 @@ dqn = DQNAgent(model=model,
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 print(model.summary())
 
-dqn.load_weights('/home/dimitrije/git/deep-learning-project/keras_dq/dql_player_1_vs_nobody.h5f')
+dqn.load_weights('/home/dimitrije/git/deep-learning-project/keras_dq/player2_leo_competitive_5_reward_489.0.h5f')
 
 # Finally, evaluate our algorithm for 5 episodes.
 dqn.test(env, nb_episodes=5, visualize=True)

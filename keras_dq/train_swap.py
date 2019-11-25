@@ -8,7 +8,7 @@ from rl.agents.dqn import DQNAgent
 from rl.policy import EpsGreedyQPolicy, GreedyQPolicy, MaxBoltzmannQPolicy
 from rl.memory import SequentialMemory
 from keras_dq.wrappers import VersusAgentControllerWrapper, TrainingWrapper
-from keras_dq.model import create_model
+from keras_dq.model import create_model, RewardLogger
 
 # each player can make exactly 18 actions
 num_actions = 18
@@ -61,16 +61,22 @@ for r in range(max_rounds):
     # apply observation space wrapper to reduce input size
     env = VersusAgentControllerWrapper(env, fixed_player, shouldSwap)
 
+    # logs the rewards
+    reward_logger = RewardLogger()
+
     # fit the main player for
     main_player.fit(env,
                     action_repetition=20,
                     nb_steps=4400,
                     nb_max_episode_steps=220,
                     visualize=True,
+                    callbacks=[reward_logger],
                     verbose=2)
 
     # save the weights
     if not shouldSwap:
-        player_1.save_weights('player1_don_competitive.h5f', overwrite=True)
+        player_1.save_weights(
+            'player1_don_competitive_%s_reward_%s.h5f' % (r, reward_logger.total // reward_logger.num), overwrite=True)
     else:
-        player_2.save_weights('player2_leo_competitive.h5f', overwrite=True)
+        player_2.save_weights(
+            'player2_leo_competitive_%s_reward_%s.h5f' % (r, reward_logger.total // reward_logger.num), overwrite=True)

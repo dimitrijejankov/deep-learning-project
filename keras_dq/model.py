@@ -3,7 +3,20 @@ from keras.layers import Dense, Activation, Flatten, Conv2D
 from rl.policy import EpsGreedyQPolicy, GreedyQPolicy, MaxBoltzmannQPolicy
 from rl.memory import SequentialMemory
 from rl.agents.dqn import DQNAgent
+from rl.callbacks import Callback
 from keras.optimizers import Adam
+
+
+class RewardLogger(Callback):
+
+    def __init__(self):
+        super(RewardLogger, self).__init__()
+        self.total = 0
+        self.num = 0
+
+    def on_episode_end(self, step, logs=None):
+        self.total += logs["episode_reward"]
+        self.num += 1
 
 
 def create_model(name, action_space_n):
@@ -21,7 +34,7 @@ def create_model(name, action_space_n):
     model.add(Dense(action_space_n, activation='linear'))
 
     # set the policy
-    policy = MaxBoltzmannQPolicy()
+    policy = EpsGreedyQPolicy()
     memory = SequentialMemory(limit=50000, window_length=1)
 
     # make the player 1 agent

@@ -42,7 +42,7 @@ model.add(Dense(32, activation='relu'))
 model.add(Dense(env.action_space.n, activation='linear'))
 
 # set the policy
-policy = MaxBoltzmannQPolicy()
+policy = EpsGreedyQPolicy()
 memory = SequentialMemory(limit=50000, window_length=1)
 
 # make the player 1 agent

@@ -1,7 +1,7 @@
 import cv2
 import gym
 import numpy as np
-import keyboard
+from pynput import keyboard
 from gym import spaces
 
 
@@ -61,8 +61,9 @@ class TrainingWrapper(gym.ObservationWrapper):
             player_1_reward = self.player_2_hp - info['health2']
             self.player_2_hp = info['health2']
 
-            # just focus on how much dmg we are doing
-            reward = player_2_reward * 4 if self.swap_players else player_1_reward * 4
+            # attack and defend
+            reward = player_2_reward * 8 - player_1_reward if self.swap_players \
+                else player_1_reward * 8 - player_2_reward
 
         if done:
             # reset them back
@@ -246,6 +247,60 @@ class VersusAgentControllerWrapper(gym.ActionWrapper):
         return [self._reverse_action(a1), self._reverse_action(a2)]
 
 
+up = False
+down = False
+left = False
+right = False
+a = False
+s = False
+
+
+def on_press(key):
+    try:
+        if key.char == 'a' or key.char == 'A':
+            global a
+            a = True
+        elif key.char == 's' or key.char == 'S':
+            global s
+            s = True
+    except AttributeError:
+        if key == keyboard.Key.up:
+            global up
+            up = True
+        elif key == keyboard.Key.down:
+            global down
+            down = True
+        elif key == keyboard.Key.left:
+            global left
+            left = True
+        elif key == keyboard.Key.right:
+            global right
+            right = True
+
+
+def on_release(key):
+    try:
+        if key.char == 'a' or key.char == 'A':
+            global a
+            a = False
+        elif key.char == 's' or key.char == 'S':
+            global s
+            s = False
+    except AttributeError:
+        if key == keyboard.Key.up:
+            global up
+            up = False
+        elif key == keyboard.Key.down:
+            global down
+            down = False
+        elif key == keyboard.Key.left:
+            global left
+            left = False
+        elif key == keyboard.Key.right:
+            global right
+            right = False
+
+
 class UserControllerWrapper(gym.ActionWrapper):
     mapping = {
         #   P           U, D, R, L, K
@@ -269,27 +324,42 @@ class UserControllerWrapper(gym.ActionWrapper):
         17: [1, 0, 0, 0, 0, 1, 1, 0, 0],  # Down Right A
     }
 
-    def __init__(self, env):
+    def __init__(self, env, should_swap):
         super(UserControllerWrapper, self).__init__(env)
         self.action_space = spaces.Discrete(18)
 
+        self.listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+        self.listener.start()
+        self.should_swap = should_swap
+
     def action(self, action):
 
+        global a
+        global s
+        global up
+        global down
+        global left
+        global right
+
         # get the action from both players
-        a2 = [keyboard.is_pressed('a'),
+        a2 = [1 if a else 0,
               0,
               0,
               0,
-              keyboard.is_pressed('y'),
-              keyboard.is_pressed('h'),
-              keyboard.is_pressed('j'),
-              keyboard.is_pressed('g'),
-              keyboard.is_pressed('s')]
+              1 if up else 0,
+              1 if down else 0,
+              1 if left else 0,
+              1 if right else 0,
+              1 if s else 0]
 
-        a = self.mapping.get(action[0]).copy()
-        a.extend(a2)
-
-        return a
+        if not self.should_swap:
+            a = self.mapping.get(action).copy()
+            a.extend(a2)
+            return a
+        else:
+            a = a2.copy()
+            a.extend(self.mapping.get(action))
+            return a
 
     def _reverse_action(self, action):
         for k in self.mapping.keys():
