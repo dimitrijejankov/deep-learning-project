@@ -31,8 +31,8 @@ env = PlayerOneNetworkControllerWrapper(env)
 
 # make the model
 model = Sequential()
-model.add(Conv2D(filters=32, kernel_size=8, strides=4, activation="relu", input_shape=(64, 64, 3),
-                 data_format="channels_last"))
+model.add(Conv2D(filters=32, kernel_size=8, strides=4, activation="relu", input_shape=(4, 64, 64),
+                 data_format="channels_first"))
 model.add(Conv2D(filters=64, kernel_size=4, strides=2, activation="relu"))
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
@@ -58,8 +58,4 @@ player1 = DQNAgent(model=model,
 player1.compile(Adam(lr=1e-3), metrics=['mae'])
 print(model.summary())
 
-# do the training for at least 20 episodes 220 * 20 = 4400
-player1.fit(env, action_repetition=20, nb_steps=4400, nb_max_episode_steps=220, visualize=True, verbose=2)
-
-# After training is done, we save the final weights.
-player1.save_weights('player1_don.h5f', overwrite=True)
+player1.test(env, nb_episodes=10, visualize=True)

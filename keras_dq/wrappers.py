@@ -3,6 +3,7 @@ import gym
 import numpy as np
 from pynput import keyboard
 from gym import spaces
+from collections import deque
 
 
 class TrainingWrapper(gym.ObservationWrapper):
@@ -12,6 +13,9 @@ class TrainingWrapper(gym.ObservationWrapper):
 
     # how many times have we restarted
     num_resets = 0
+
+    # the maximum queue
+    q = deque(maxlen=4)
 
     def observation(self, observation):
         return TrainingWrapper.process(observation)
@@ -34,7 +38,14 @@ class TrainingWrapper(gym.ObservationWrapper):
         # we restarted inc the number
         self.num_resets += 1
 
-        return self.observation(observation)
+        # the observation
+        obs = self.observation(observation)
+
+        # fill up the queue
+        for i in range(4):
+            self.q.append(obs)
+
+        return np.array(list(self.q))
 
     def step(self, action):
 
@@ -71,12 +82,16 @@ class TrainingWrapper(gym.ObservationWrapper):
             self.player_2_hp = 176
             reward = 0
 
+        # the observation
+        obs = self.observation(observation)
+        self.q.append(obs)
+
         # return the observation
-        return self.observation(observation), reward, done, info
+        return np.array(list(self.q)), reward, done, info
 
     @staticmethod
     def process(img):
-        # img = img[:, :, 0] * 0.299 + img[:, :, 1] * 0.587 + img[:, :, 2] * 0.114
+        img = img[:, :, 0] * 0.299 + img[:, :, 1] * 0.587 + img[:, :, 2] * 0.114
         x_t = cv2.resize(img, (64, 64), interpolation=cv2.INTER_AREA)
         # x_t = np.reshape(x_t, (64, 64))
         x_t = np.nan_to_num(x_t)
@@ -209,7 +224,7 @@ class VersusAgentControllerWrapper(gym.ActionWrapper):
 
     def step(self, action):
         self._observation, reward, done, info = self.env.step(self.action(action))
-        return self.observation(self._observation), reward, done, info
+        return self._observation, reward, done, info
 
     def action(self, a1):
 
