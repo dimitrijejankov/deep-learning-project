@@ -1,6 +1,8 @@
 import cv2
 import gym
 import numpy as np
+import gamepad
+
 from pynput import keyboard
 from gym import spaces
 from collections import deque
@@ -366,6 +368,73 @@ class UserControllerWrapper(gym.ActionWrapper):
               1 if left else 0,
               1 if right else 0,
               1 if s else 0]
+
+        if not self.should_swap:
+            a = self.mapping.get(action).copy()
+            a.extend(a2)
+            return a
+        else:
+            a = a2.copy()
+            a.extend(self.mapping.get(action))
+            return a
+
+    def _reverse_action(self, action):
+        for k in self.mapping.keys():
+            if self.mapping[k] == action:
+                return self.mapping[k]
+        return 0
+
+    def reverse_action(self, action):
+
+        # get the left and right action
+        a1 = action[:len(action) // 2]
+        a2 = action[len(action) // 2:]
+
+        return [self._reverse_action(a1), self._reverse_action(a2)]
+
+
+class UserGamepadControllerWrapper(gym.ActionWrapper):
+    mapping = {
+        #   P           U, D, R, L, K
+        0: [0, 0, 0, 0, 1, 0, 0, 0, 0],  # Up
+        1: [0, 0, 0, 0, 0, 1, 0, 0, 0],  # Down
+        2: [0, 0, 0, 0, 0, 0, 0, 1, 0],  # Left
+        3: [1, 0, 0, 0, 0, 0, 0, 1, 0],  # Left + A
+        4: [0, 0, 0, 0, 0, 0, 0, 1, 1],  # Left + B
+        5: [1, 0, 0, 0, 0, 0, 0, 1, 1],  # Left + A + B
+        6: [0, 0, 0, 0, 0, 0, 1, 0, 0],  # Right
+        7: [1, 0, 0, 0, 0, 0, 1, 0, 0],  # Right + A
+        8: [0, 0, 0, 0, 0, 0, 1, 0, 1],  # Right + B
+        9: [1, 0, 0, 0, 0, 0, 1, 0, 1],  # Right + A + B
+        10: [1, 0, 0, 0, 0, 0, 0, 0, 0],  # A
+        11: [0, 0, 0, 0, 0, 0, 0, 0, 1],  # B
+        12: [1, 0, 0, 0, 0, 1, 0, 0, 0],  # Down A
+        13: [0, 0, 0, 0, 0, 1, 0, 0, 1],  # Down B
+        14: [0, 0, 0, 0, 0, 1, 0, 1, 1],  # Down Left B
+        15: [0, 0, 0, 0, 0, 1, 1, 0, 1],  # Down Right B
+        16: [1, 0, 0, 0, 0, 1, 0, 1, 0],  # Down Left A
+        17: [1, 0, 0, 0, 0, 1, 1, 0, 0],  # Down Right A
+    }
+
+    def __init__(self, env, should_swap):
+        super(UserGamepadControllerWrapper, self).__init__(env)
+        self.action_space = spaces.Discrete(18)
+
+        self.g = gamepad.Gamepad()
+        self.should_swap = should_swap
+
+    def action(self, action):
+
+        # get the action from both players
+        a2 = [self.g.button("btn2"),
+              0,
+              0,
+              0,
+              1 if self.g.axis("ly") == -1.0 else 0,
+              1 if self.g.axis("ly") == 1.0 else 0,
+              1 if self.g.axis("lx") == -1.0 else 0,
+              1 if self.g.axis("lx") == 1.0 else 0,
+              self.g.button("btn3")]
 
         if not self.should_swap:
             a = self.mapping.get(action).copy()

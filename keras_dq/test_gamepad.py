@@ -10,7 +10,7 @@ from rl.policy import EpsGreedyQPolicy, GreedyQPolicy, BoltzmannQPolicy
 from rl.memory import SequentialMemory
 from keras_dq.model import create_model
 
-from keras_dq.wrappers import UserControllerWrapper, TrainingWrapper
+from keras_dq.wrappers import UserGamepadControllerWrapper, TrainingWrapper
 
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
@@ -26,7 +26,7 @@ env = retro.make(game='TeenageMutantNinjaTurtles-Nes', state="DonVSLeo", inttype
 #env = retro.make(game='TeenageMutantNinjaTurtles-Nes', state="DonVSLeo", inttype=integration, players=2)
 
 # 2. Apply action space wrapper
-env = UserControllerWrapper(env, True)
+env = UserGamepadControllerWrapper(env, True)
 
 # 3. Apply observation space wrapper to reduce input size
 env = TrainingWrapper(True, env, integration)
